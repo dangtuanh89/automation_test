@@ -64,7 +64,7 @@ class AddVacancyPage(BasePage):
         return self.is_displayed(self.vacancies)
 
     def search_job(self):
-        self.get_element(self.job_title_vacancies_page).click()
+        self.wait_and_click(self.job_title_vacancies_page).click()
         self.get_element(self.automaton_tester_vacancies_page).click()
         current_login_user = self.get_element(self.current_login_user).text
         self.get_element(self.hiring_manager_vacancies_page).click()

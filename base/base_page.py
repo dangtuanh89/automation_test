@@ -26,3 +26,30 @@ class BasePage:
     def click_by_js(self, locator):
         element = WebDriverWait(self.driver, 10).until(EC.presence_of_element_located(locator))
         self.driver.execute_script("arguments[0].click();", element)
+
+    def wait_and_click(self, locator, use_js_fallback: bool = True, timeout: int = 10):
+        """
+        Wait until the element is clickable and click it. If the element is not interactable
+        (common in headless CI environments or when element is off-screen/overlapped),
+        optionally fallback to a JS click.
+
+        Args:
+            locator: tuple locator (By, value)
+            use_js_fallback: when True, if element_to_be_clickable fails or click raises
+                             ElementNotInteractableException, a JS click will be performed.
+            timeout: seconds to wait for clickable condition.
+        """
+        try:
+            element = WebDriverWait(self.driver, timeout).until(EC.element_to_be_clickable(locator))
+            element.click()
+        except Exception:
+            if use_js_fallback:
+                # Ensure element is present then click via JS (scroll into view first)
+                element = WebDriverWait(self.driver, timeout).until(EC.presence_of_element_located(locator))
+                try:
+                    self.driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", element)
+                except Exception:
+                    pass
+                self.driver.execute_script("arguments[0].click();", element)
+            else:
+                raise
