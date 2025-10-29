@@ -30,8 +30,8 @@ class AddVacancyPage(BasePage):
     
     def input_vacancy_data(self, vacancy_name, description, number_of_position):
         self.type(self.vacancy_name_field, vacancy_name)
-        self.wait_and_click(self.job_title_select_box).click()
-        self.wait_and_click(self.ceo).click()
+        self.wait_and_click(self.job_title_select_box)
+        self.wait_and_click(self.ceo)
         self.type(self.description_field, description)
         self.type(self.number_of_positions, number_of_position)
 
@@ -65,11 +65,11 @@ class AddVacancyPage(BasePage):
 
     def search_job(self):
         self.wait_and_click(self.job_title_vacancies_page)
-        self.wait_and_click(self.ceo_vacancies_page).click()
+        self.wait_and_click(self.ceo_vacancies_page)
         current_login_user = self.get_element(self.current_login_user).text
-        self.wait_and_click(self.hiring_manager_vacancies_page).click()
+        self.wait_and_click(self.hiring_manager_vacancies_page)
         hiring_manager = (By.XPATH, f"//div[@role='listbox']//span[contains(., '{current_login_user.split()[0]}')]")
-        self.wait_and_click(hiring_manager).click()
+        self.wait_and_click(hiring_manager)
         self.get_element(self.search_btn).click()
 
     def verify_has_search_record(self):
