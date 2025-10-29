@@ -1,7 +1,9 @@
 from base.base_test import BaseTest
 from utils.config_reader import ConfigReader
+import pytest
 
 class TestAddVacancy(BaseTest):
+    @pytest.mark.smoke
     def test_add_new_automation_tester_vacancy(self, login_page, dashboard_page, recruitment_page, add_vacancy_page, edit_vacancy_page):
         login_page.login(ConfigReader.get_username(), ConfigReader.get_password())
         dashboard_page.click_recruitment_menu()

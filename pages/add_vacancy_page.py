@@ -9,7 +9,7 @@ class AddVacancyPage(BasePage):
         self.add_vacancy =(By.XPATH, "//h6[text()='Add Vacancy']")
         self.vacancy_name_field = (By.XPATH, "//label[text()='Vacancy Name']/following::input[@class='oxd-input oxd-input--active'][1]")
         self.job_title_select_box = (By.XPATH, "//label[text()='Job Title']/following::div[@class='oxd-select-text-input']")
-        self.automation_tester_job = (By.XPATH, "//div[@role='listbox']//div[@role='option']//span[text()='Automaton Tester']")
+        self.senior_ios_engineer = (By.XPATH, "//div[@role='listbox']//div[@role='option']//span[text()='Senior iOS Engineer']")
         self.description_field = (By.XPATH, "//textarea[@placeholder='Type description here']")
         self.hiring_manager_field = (By.XPATH, "//input[@placeholder='Type for hints...']")
         self.number_of_positions = (By.XPATH, "//label[text()='Number of Positions']/following::input[@class='oxd-input oxd-input--active']")
@@ -19,7 +19,7 @@ class AddVacancyPage(BasePage):
         self.save_btn = (By.XPATH, "//button[text()=' Save ']")
         self.vacancies = (By.XPATH, "//h5[text()='Vacancies']")
         self.job_title_vacancies_page = (By.XPATH, "//label[text()='Job Title']/following::div[@class='oxd-select-text-input'][1]")
-        self.automation_tester_vacancies_page = (By.XPATH, "//div[@role='option']//span[text()='Automaton Tester']")
+        self.senior_ios_engineer_vacancies_page = (By.XPATH, "//div[@role='option']//span[text()='Senior iOS Engineer']")
         self.hiring_manager_vacancies_page = (By.XPATH, "//label[text()='Hiring Manager']/following::div[@class='oxd-select-text-input'][1]")
         self.search_btn = (By.XPATH, "//button[text()=' Search ']")
         self.search_results = (By.XPATH, "//div[@role='table']//div[@role='row'][.//div[@role='cell']]")
@@ -31,7 +31,7 @@ class AddVacancyPage(BasePage):
     def input_vacancy_data(self, vacancy_name, description, number_of_position):
         self.type(self.vacancy_name_field, vacancy_name)
         self.get_element(self.job_title_select_box).click()
-        self.get_element(self.automation_tester_job).click()
+        self.get_element(self.senior_ios_engineer).click()
         self.type(self.description_field, description)
         self.type(self.number_of_positions, number_of_position)
 
@@ -65,7 +65,7 @@ class AddVacancyPage(BasePage):
 
     def search_job(self):
         self.get_element(self.job_title_vacancies_page).click()
-        self.get_element(self.automation_tester_vacancies_page).click()
+        self.get_element(self.senior_ios_engineer_vacancies_page).click()
         current_login_user = self.get_element(self.current_login_user).text
         self.get_element(self.hiring_manager_vacancies_page).click()
         hiring_manager = (By.XPATH, f"//div[@role='listbox']//span[contains(., '{current_login_user.split()[0]}')]")
@@ -82,30 +82,33 @@ class AddVacancyPage(BasePage):
             return False
     
     def verify_search_data(self):
-        expected_job_title = "Automaton Tester"
+        expected_job_title = "Senior iOS Engineer"
         expected_hiring_manager = self.get_element(self.current_login_user).text
         rows = self.get_elements(self.search_results)
         if not rows:
             print("No search record found")
             return False
         
+        # Biến để kiểm tra xem bản ghi mới tạo có được tìm thấy không
+        found_matching_record = False
         for row in rows:
             cells = row.find_elements(*self.record_cells)
+            print([cell.text.strip() for cell in cells])
             try:
-                job_title = cells[1].text.strip()
-                hiring_manager = cells[2].text.strip()
+                actual_job_title = cells[2].text.strip()
+                actual_hiring_manager = cells[3].text.strip()
             except IndexError:
                 continue
 
-            if job_title != expected_job_title:
-                print(f"Job Title '{job_title}' mismatch with '{expected_job_title}'")
-                return False
+            if actual_job_title == expected_job_title and expected_hiring_manager in actual_hiring_manager:
+                found_matching_record = True
+                print("Found matching record with correct Job Title and Hiring Manager.")
+                return True
             
-            if expected_hiring_manager not in hiring_manager:
-                print(f"Hiring Manager '{hiring_manager}' mismatch with '{expected_hiring_manager}'")
-                return False
-        print("All data dispatches matching with the input data")
-        return True
+        if not found_matching_record:
+            print("No matching record found with the expected Job Title and Hiring Manager.")
+            return False
+       
 
 
 

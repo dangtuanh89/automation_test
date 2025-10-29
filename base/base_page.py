@@ -11,7 +11,7 @@ class BasePage:
         return element
     
     def get_elements(self, locator):
-        elements = WebDriverWait(self.driver, 10).until(EC.presence_of_element_located(locator))
+        elements = WebDriverWait(self.driver, 10).until(EC.presence_of_all_elements_located(locator))
         return elements
     
     def type(self, locator, text):
