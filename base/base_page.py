@@ -24,7 +24,7 @@ class BasePage:
         return element.is_displayed()
 
     def click_by_js(self, locator):
-        element = WebDriverWait(self.driver, 10).until(EC.presence_of_element_located(locator))
+        element = WebDriverWait(self.driver, 15).until(EC.presence_of_element_located(locator))
         self.driver.execute_script("arguments[0].click();", element)
 
     def wait_and_click(self, locator, use_js_fallback: bool = True, timeout: int = 10):
