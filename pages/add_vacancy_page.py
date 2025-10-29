@@ -39,7 +39,7 @@ class AddVacancyPage(BasePage):
         current_login_user = self.get_element(self.current_login_user).text
         self.type(self.hiring_manager_field, current_login_user)
         suggestion = (By.XPATH, f"//div[@role='listbox']//span[contains(., '{current_login_user.split()[0]}')]")
-        self.wait_and_click(suggestion).click()
+        self.wait_and_click(suggestion)
         
     def is_active_selected(self):
         active = self.get_element(self.active)
