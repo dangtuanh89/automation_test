@@ -36,7 +36,7 @@ jobs:
     
     - name: Run tests 
       run: |
-        pytest -m smoke --html=reports/report.html --self-contained.html
+        pytest -m smoke --html=reports/report.html --self-contained-html
 
     - name: Upload test reports
       if: always()
