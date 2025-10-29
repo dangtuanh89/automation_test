@@ -9,7 +9,7 @@ class AddVacancyPage(BasePage):
         self.add_vacancy =(By.XPATH, "//h6[text()='Add Vacancy']")
         self.vacancy_name_field = (By.XPATH, "//label[text()='Vacancy Name']/following::input[@class='oxd-input oxd-input--active'][1]")
         self.job_title_select_box = (By.XPATH, "//label[text()='Job Title']/following::div[@class='oxd-select-text-input']")
-        self.automaton_tester = (By.XPATH, "//div[@role='listbox']//div[@role='option']//span[text()='Automaton Tester']")
+        self.ceo = (By.XPATH, "//div[@role='listbox']//div[@role='option']//span[text()='Chief Executive Officer']")
         self.description_field = (By.XPATH, "//textarea[@placeholder='Type description here']")
         self.hiring_manager_field = (By.XPATH, "//input[@placeholder='Type for hints...']")
         self.number_of_positions = (By.XPATH, "//label[text()='Number of Positions']/following::input[@class='oxd-input oxd-input--active']")
@@ -19,7 +19,7 @@ class AddVacancyPage(BasePage):
         self.save_btn = (By.XPATH, "//button[text()=' Save ']")
         self.vacancies = (By.XPATH, "//h5[text()='Vacancies']")
         self.job_title_vacancies_page = (By.XPATH, "//label[text()='Job Title']/following::div[@class='oxd-select-text-input'][1]")
-        self.automaton_tester_vacancies_page = (By.XPATH, "//div[@role='option']//span[text()='Automaton Tester']")
+        self.ceo_vacancies_page = (By.XPATH, "//div[@role='option']//span[text()='Chief Executive Officer']")
         self.hiring_manager_vacancies_page = (By.XPATH, "//label[text()='Hiring Manager']/following::div[@class='oxd-select-text-input'][1]")
         self.search_btn = (By.XPATH, "//button[text()=' Search ']")
         self.search_results = (By.XPATH, "//div[@role='table']//div[@role='row'][.//div[@role='cell']]")
@@ -31,7 +31,7 @@ class AddVacancyPage(BasePage):
     def input_vacancy_data(self, vacancy_name, description, number_of_position):
         self.type(self.vacancy_name_field, vacancy_name)
         self.get_element(self.job_title_select_box).click()
-        self.get_element(self.automaton_tester).click()
+        self.get_element(self.ceo).click()
         self.type(self.description_field, description)
         self.type(self.number_of_positions, number_of_position)
 
@@ -65,7 +65,7 @@ class AddVacancyPage(BasePage):
 
     def search_job(self):
         self.wait_and_click(self.job_title_vacancies_page).click()
-        self.get_element(self.automaton_tester_vacancies_page).click()
+        self.get_element(self.ceo_vacancies_page).click()
         current_login_user = self.get_element(self.current_login_user).text
         self.get_element(self.hiring_manager_vacancies_page).click()
         hiring_manager = (By.XPATH, f"//div[@role='listbox']//span[contains(., '{current_login_user.split()[0]}')]")
@@ -82,7 +82,7 @@ class AddVacancyPage(BasePage):
             return False
     
     def verify_search_data(self):
-        expected_job_title = "Automaton Tester"
+        expected_job_title = "Chief Executive Officer"
         expected_hiring_manager = self.get_element(self.current_login_user).text
         rows = self.get_elements(self.search_results)
         if not rows:
