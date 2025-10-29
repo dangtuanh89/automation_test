@@ -102,7 +102,7 @@ class AddVacancyPage(BasePage):
 
             if actual_job_title == expected_job_title and expected_hiring_manager in actual_hiring_manager:
                 found_matching_record = True
-                print("Found matching record with correct Job Title and Hiring Manager.")
+                print(f"Found matching record with correct Job Title: {actual_job_title} and Hiring Manager: {actual_hiring_manager}.")
                 return True
             
         if not found_matching_record:
