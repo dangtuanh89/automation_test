@@ -2,6 +2,8 @@ from base.base_page import BasePage
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 
 class AddVacancyPage(BasePage):
     def __init__(self, driver):
@@ -65,6 +67,9 @@ class AddVacancyPage(BasePage):
 
     def search_job(self):
         self.wait_and_click(self.job_title_vacancies_page)
+        WebDriverWait(self.driver, 10).until(
+        EC.presence_of_element_located((By.XPATH, "//div[@role='listbox']"))
+    )
         self.wait_and_click(self.automation_tester_vacancies_page)
         current_login_user = self.get_element(self.current_login_user).text
         self.wait_and_click(self.hiring_manager_vacancies_page)
