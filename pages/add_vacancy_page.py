@@ -64,8 +64,13 @@ class AddVacancyPage(BasePage):
     
     def verify_vacancies_displayed(self):
         return self.is_displayed(self.vacancies)
+    
+    def wait_for_vacancies_page(self, timeout=10):
+        WebDriverWait(self.driver, timeout).until(
+        EC.visibility_of_element_located((By.XPATH, "//h5[text()='Vacancies']")))
 
     def search_job(self):
+        self.wait_for_vacancies_page()
         self.wait_and_click(self.job_title_vacancies_page)
         WebDriverWait(self.driver, 10).until(
         EC.presence_of_element_located((By.XPATH, "//div[@role='listbox']"))
