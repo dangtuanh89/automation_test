@@ -71,10 +71,15 @@ class AddVacancyPage(BasePage):
 
     def search_job(self):
         self.wait_for_vacancies_page()
-        self.wait_and_click(self.job_title_vacancies_page)
-        WebDriverWait(self.driver, 10).until(
-        EC.presence_of_element_located((By.XPATH, "//div[@role='listbox']"))
-    )
+        try:
+            WebDriverWait(self.driver, 10).until(
+                EC.visibility_of_element_located((By.XPATH, "//div[@role='listbox']")))
+        except:
+            print("Dropdown không mở, thử click lại...")
+            self.wait_and_click(self.job_title_vacancies_page)
+            WebDriverWait(self.driver, 10).until(
+            EC.visibility_of_element_located((By.XPATH, "//div[@role='listbox']")))
+
         self.wait_and_click(self.automation_tester_vacancies_page)
         current_login_user = self.get_element(self.current_login_user).text
         self.wait_and_click(self.hiring_manager_vacancies_page)
