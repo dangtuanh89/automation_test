@@ -71,14 +71,16 @@ class AddVacancyPage(BasePage):
 
     def search_job(self):
         self.wait_for_vacancies_page()
-        try:
-            WebDriverWait(self.driver, 10).until(
-                EC.visibility_of_element_located((By.XPATH, "//div[@role='listbox']")))
-        except:
-            print("Dropdown không mở, thử click lại...")
+        dropdown_xpath = "//div[@role='listbox']"
+        for attempt in range(3):
             self.wait_and_click(self.job_title_vacancies_page)
-            WebDriverWait(self.driver, 10).until(
-            EC.visibility_of_element_located((By.XPATH, "//div[@role='listbox']")))
+            try:
+                WebDriverWait(self.driver, 5).until(EC.visibility_of_element_located((By.XPATH, dropdown_xpath)))
+                break
+            except:
+                print(f"Attempt {attempt + 1}: Dropdown not opened, retrying...")
+                if attempt == 2:
+                    raise Exception("Job Title dropdown could not be opened after multiple attempts")
 
         self.wait_and_click(self.automation_tester_vacancies_page)
         current_login_user = self.get_element(self.current_login_user).text

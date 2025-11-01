@@ -29,28 +29,52 @@ class BasePage:
         element = WebDriverWait(self.driver, 15).until(EC.presence_of_element_located(locator))
         self.driver.execute_script("arguments[0].click();", element)
 
-    def wait_and_click(self, locator, use_js_fallback: bool = True, timeout: int = 20, retries: int = 2):
-        for attempt in range (retries +1):
+    def wait_and_click(self, locator, use_js_fallback: bool = True, timeout: int = 20, retries: int = 3):
+        """
+        Click vào phần tử an toàn với retry, scroll và JS fallback.
+        Dùng cho dropdown hoặc nút có thể bị che, load chậm, hoặc DOM thay đổi.
+        """
+
+        # Biến dùng để lưu lại lỗi cuối cùng xảy ra (nếu tất cả lần click đều thất bại)
+        last_exception = None
+
+        # Thử click nhiều lần (theo số lần 'retries')
+        for attempt in range(retries):
             try:
+                # Chờ phần tử có thể click được
                 element = WebDriverWait(self.driver, timeout).until(EC.element_to_be_clickable(locator))
+
+                # Cuộn phần tử vào giữa màn hình (phòng khi bị khuất)
+                self.driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", element)
+
+                # Thực hiện click
                 element.click()
-                return
+                return  # Thành công -> thoát hàm
+
             except Exception as e:
-                if attempt < retries:
-                    time.sleep(1)
-                else:
-                    try:
-                        if use_js_fallback:
-                            element = WebDriverWait(self.driver, timeout).until(EC.presence_of_element_located(locator))
-                            self.driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", element)
-                            self.driver.execute_script("arguments[0].click();", element)
-                        else:
-                            raise e
-                    except Exception as final_e:
-                        screenshot_dir = os.getenv("SCREENSHOT_DIR", "screenshots")
-                        os.makedirs(screenshot_dir, exist_ok=True)
-                        filename = os.path.join(
-                            screenshot_dir,f"wait_and_click_error_{int(time.time())}.png")
-                        self.driver.save_screenshot(filename)
-                        print(f"Click failed, screenshot saved to: {filename}")
-                        raise final_e
+                # Nếu click thất bại, lưu lại lỗi và thử lại
+                last_exception = e
+                print(f"Attempt {attempt + 1} failed to click element {locator}: {e}")
+                time.sleep(1)  # Chờ 1s rồi thử lại
+
+        # Nếu đã thử đủ 'retries' lần mà vẫn lỗi, thì thử click bằng JavaScript fallback
+        if use_js_fallback:
+            try:
+                element = WebDriverWait(self.driver, timeout).until(EC.presence_of_element_located(locator))
+                self.driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", element)
+                self.driver.execute_script("arguments[0].click();", element)
+                print(f"Clicked {locator} via JS fallback.")
+                return  # Click thành công bằng JS
+            except Exception as e:
+                # Nếu JS click cũng lỗi, ghi nhận lỗi cuối cùng
+                last_exception = e
+
+        # Nếu vẫn không click được, chụp screenshot để debug
+        screenshot_dir = os.getenv("SCREENSHOT_DIR", "screenshots")
+        os.makedirs(screenshot_dir, exist_ok=True)
+        filename = os.path.join(screenshot_dir, f"click_error_{int(time.time())}.png")
+        self.driver.save_screenshot(filename)
+        print(f"Click failed on {locator}, screenshot saved to: {filename}")
+
+        # Ném lại lỗi cuối cùng (giúp traceback chính xác)
+        raise last_exception
