@@ -1,6 +1,7 @@
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from selenium.common.exceptions import TimeoutException 
 import time
 import os
 
@@ -78,3 +79,13 @@ class BasePage:
 
         # Ném lại lỗi cuối cùng (giúp traceback chính xác)
         raise last_exception
+    
+    def open_dropdown(self, locator, listbox_xpath="//div[@role='listbox']", retries=3):
+        for attempt in range(retries):
+            self.get_element(locator).click()
+            try:
+                WebDriverWait(self.driver, 3).until(EC.presence_of_element_located((By.XPATH, listbox_xpath)))
+                return
+            except:
+                print(f"Attempt {attempt + 1}: dropdown not opened, retrying...")
+        raise TimeoutException("Dropdown could not be opened after multiple attempts")

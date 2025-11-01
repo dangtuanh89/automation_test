@@ -4,6 +4,8 @@ from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from selenium.common.exceptions import TimeoutException, StaleElementReferenceException
+import time
 
 class AddVacancyPage(BasePage):
     def __init__(self, driver):
@@ -21,12 +23,15 @@ class AddVacancyPage(BasePage):
         self.save_btn = (By.XPATH, "//button[text()=' Save ']")
         self.vacancies = (By.XPATH, "//h5[text()='Vacancies']")
         self.job_title_vacancies_page = (By.XPATH, "//label[text()='Job Title']/following::div[@class='oxd-select-text-input'][1]")
+        self.job_title_options = (By.XPATH, "//div[@role='listbox']//div[@role='option']//span")
         self.automation_tester_vacancies_page = (By.XPATH, "//div[@role='option']//span[normalize-space()='Automaton Tester']")
         self.hiring_manager_vacancies_page = (By.XPATH, "//label[text()='Hiring Manager']/following::div[@class='oxd-select-text-input'][1]")
         self.search_btn = (By.XPATH, "//button[text()=' Search ']")
         self.search_results = (By.XPATH, "//div[@role='table']//div[@role='row'][.//div[@role='cell']]")
         self.record_cells = (By.XPATH, ".//div[@role='cell']")
-
+        self.search_btn = (By.XPATH, "//button[text()=' Search ']")
+        self.reset_btn = (By.XPATH, "//button[text()=' Reset ']")
+    
     def verify_add_vacancy_displayed(self):
         return self.is_displayed(self.add_vacancy)
     
@@ -61,6 +66,12 @@ class AddVacancyPage(BasePage):
     
     def click_save_btn(self):
         self.get_element(self.save_btn).click()
+    
+    def click_search_btn(self):
+        self.get_element(self.search_btn).click()
+
+    def click_reset_btn(self):
+        self.get_element(self.reset_btn).click()
     
     def verify_vacancies_displayed(self):
         return self.is_displayed(self.vacancies)
@@ -106,7 +117,7 @@ class AddVacancyPage(BasePage):
             print("No search record found")
             return False
         
-        # Biến để kiểm tra xem bản ghi mới tạo có được tìm thấy không
+        # Variable to check if newly created record is found
         found_matching_record = False
         for row in rows:
             cells = row.find_elements(*self.record_cells)
@@ -125,7 +136,99 @@ class AddVacancyPage(BasePage):
         if not found_matching_record:
             print(f"No matching record found with the expected Job Title: {actual_job_title} and Hiring Manager {actual_hiring_manager}.")
             return False
-       
+    
+    def verify_search_results_by_text(self, expected_job_title, retries=3):
+        for attempt in range(retries):
+            try:
+                rows = self.get_elements(self.search_results)
+                if not rows:
+                    print(f"No records found for job title: {expected_job_title}")
+                    return False
+
+                for row in rows:
+                    cells = row.find_elements(*self.record_cells)
+                    texts = [cell.text.strip() for cell in cells]
+                    row_content = " ".join(texts)
+
+                    if expected_job_title.lower() not in row_content.lower():
+                        print(f"Records found: {'|'.join(texts)} does not contain expected filter value: {expected_job_title}")
+                        return False
+                        
+                print(f"All records match filter: {expected_job_title}")
+                return True
+        
+            except StaleElementReferenceException:
+                # If the old element is stale, get the whole table back
+                print(f"DOM reloaded during check (attempt {attempt+1}/{retries}), retrying...")
+                time.sleep(1)
+            
+            except TimeoutException:
+                print(f"Timeout while waiting for table to appear (attempt {attempt+1}/{retries})")
+                time.sleep(1)
+
+        print(f"Verification failed after {retries} retries for job title: {expected_job_title}")
+        return False
+            
+    def verify_vacancy_based_on_job_title(self): 
+        self.wait_and_click(self.job_title_vacancies_page)
+        WebDriverWait(self.driver, 5).until(EC.presence_of_element_located((By.XPATH, "//div[@role='listbox']")))
+
+        job_title_elements = self.get_elements(self.job_title_options)[1:]
+        job_titles = [element.text.strip() for element in job_title_elements]
+        ActionChains(self.driver).send_keys(Keys.ESCAPE).perform()
+        time.sleep(1)
+
+        print(f"Collected job titles: {job_titles}")
+
+        failed_titles = []  # save failed job title list
+
+        for job_title in job_titles:
+            print(f"\n--- Testing filter for job title: {job_title} ---")
+            for attempt in range(3):
+                try:
+                    self.wait_and_click(self.job_title_vacancies_page)
+                    WebDriverWait(self.driver, 3).until(EC.presence_of_element_located((By.XPATH, "//div[@role='listbox']")))
+                    specific_job_title = (By.XPATH, f"//div[@role='option']//span[normalize-space()='{job_title}']")
+                    self.get_element(specific_job_title).click()
+                    break
+                except (TimeoutException, StaleElementReferenceException):
+                    print(f"Attempt {attempt + 1}/3: dropdown not ready, retrying...")
+                    if attempt == 2:
+                        print(f"Skipping '{job_title}' (dropdown failed to open)")
+                        failed_titles.append(job_title)
+                        continue
+
+            self.click_search_btn()
+
+            # Wait for results (or timeout)
+            try:
+                WebDriverWait(self.driver, 10).until(EC.presence_of_all_elements_located(self.search_results))
+            except TimeoutException:
+                print(f"No records loaded for '{job_title}' within timeout.")
+                failed_titles.append(job_title)
+                self.click_reset_btn()
+                continue
+
+            # Check the results
+            if not self.verify_search_results_by_text(expected_job_title=job_title):
+                print(f"Verification failed for job title: {job_title}")
+                failed_titles.append(job_title)
+            else:
+                print(f"Verified successfully for: {job_title}")
+
+            # Reset filters
+            self.click_reset_btn()
+            WebDriverWait(self.driver, 5).until(EC.element_to_be_clickable(self.job_title_vacancies_page))
+
+        # Summary of results
+        if failed_titles:
+            print(f"\nSome job titles failed verification: {failed_titles}")
+            return False
+        else:
+            print("\nAll job title filters verified successfully!")
+            return True
+
+
 
 
 
