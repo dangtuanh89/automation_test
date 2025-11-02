@@ -79,13 +79,3 @@ class BasePage:
 
         # Ném lại lỗi cuối cùng (giúp traceback chính xác)
         raise last_exception
-    
-    def open_dropdown(self, locator, listbox_xpath="//div[@role='listbox']", retries=3):
-        for attempt in range(retries):
-            self.get_element(locator).click()
-            try:
-                WebDriverWait(self.driver, 3).until(EC.presence_of_element_located((By.XPATH, listbox_xpath)))
-                return
-            except:
-                print(f"Attempt {attempt + 1}: dropdown not opened, retrying...")
-        raise TimeoutException("Dropdown could not be opened after multiple attempts")
