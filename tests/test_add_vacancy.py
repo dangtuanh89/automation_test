@@ -31,12 +31,16 @@ class TestAddVacancy(BaseTest):
         dashboard_page.click_recruitment_menu()
         recruitment_page.click_vacancies_tab()
         assert add_vacancy_page.verify_filter_vacancies_based_job_title(), "The returned records does not match with the filter"
-        print("All the returned records match with job title filter")
 
     def test_filter_vacancies_based_on_vacancy(self, login_page, dashboard_page, recruitment_page, add_vacancy_page):
         login_page.login(ConfigReader.get_username(), ConfigReader.get_password())
         dashboard_page.click_recruitment_menu()
         recruitment_page.click_vacancies_tab()
         assert add_vacancy_page.verify_filter_vacancies_based_on_vacancy(), "The returned records does not match with vacancy filter"
-        print("All the returned records match with vacancy filter")
-
+    
+    def test_filter_vacancies_based_on_hiring_manager(self, login_page, dashboard_page, recruitment_page, add_vacancy_page):
+        login_page.login(ConfigReader.get_username(), ConfigReader.get_password())
+        dashboard_page.click_recruitment_menu()
+        recruitment_page.click_vacancies_tab()
+        assert add_vacancy_page.verify_filter_vacancies_based_on_hiring_manager(), "The returned records does not match with hiring manager filter"
+        

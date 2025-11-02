@@ -27,7 +27,7 @@ class AddVacancyPage(BasePage):
         self.automation_tester_vacancies_page = (By.XPATH, "//div[@role='option']//span[normalize-space()='Automaton Tester']")
         self.hiring_manager_vacancies_page = (By.XPATH, "//label[text()='Hiring Manager']/following::div[@class='oxd-select-text-input'][1]")
         self.search_btn = (By.XPATH, "//button[text()=' Search ']")
-        self.search_results = (By.XPATH, "//div[@role='table']//div[@role='row'][.//div[@role='cell']]")
+        self.search_results = (By.XPATH, "//div[@role='table']//div[@role='rowgroup']//div[@role='row'][.//div[@role='cell']]")
         self.record_cells = (By.XPATH, ".//div[@role='cell']")
         self.search_btn = (By.XPATH, "//button[text()=' Search ']")
         self.reset_btn = (By.XPATH, "//button[text()=' Reset ']")
@@ -138,12 +138,9 @@ class AddVacancyPage(BasePage):
             return False
 
     def verify_search_records_based_on_vacancy_by_text(self, expected_vacancy):
-        search_records_rows_path = (By.XPATH, "//div[@role='table']//div[@role='rowgroup']//div[@role='row'][.//div[@role='cell']]")
-        record_cells_path = (By.XPATH, ".//div[@role='cell']")
-
         try:
-            WebDriverWait(self.driver, 10).until(EC.presence_of_all_elements_located(search_records_rows_path))
-            rows = self.get_elements(search_records_rows_path)
+            WebDriverWait(self.driver, 10).until(EC.presence_of_all_elements_located(self.search_results))
+            rows = self.get_elements(self.search_results)
         except TimeoutException:
             print(f"No search records found for vacancy: {expected_vacancy}")
             return False
@@ -153,7 +150,7 @@ class AddVacancyPage(BasePage):
             return False
         
         for row in rows:
-            cells = row.find_elements(*record_cells_path)
+            cells = row.find_elements(*self.record_cells)
             cell_texts = [cell.text.strip() for cell in cells]
             row_content = " ".join(cell_texts)
 
@@ -170,7 +167,7 @@ class AddVacancyPage(BasePage):
         vacancy_options_path = (By.XPATH, "//div[@role='listbox']//div[@role='option']//span")
 
         self.get_element(vacancy_field_path).click()
-        vacancy_options_elements = self.get_elements(vacancy_options_path)[1:]
+        vacancy_options_elements = self.get_elements(vacancy_options_path)
         vacancy_options = [element.text.strip() for element in vacancy_options_elements]
         ActionChains(self.driver).send_keys(Keys.ESCAPE).perform()
         print(f"Collected vacancy options: {vacancy_options}")
@@ -218,12 +215,9 @@ class AddVacancyPage(BasePage):
             return True
 
     def verify_search_record_based_on_job_title_by_text(self, expected_job_title):
-        search_records_rows = (By.XPATH, "//div[@role='rowgroup']//div[@role='row']//div[@role='cell']")
-        record_cells = (By.XPATH, ".//div[@role='cell']")
-
         try:
-            WebDriverWait(self.driver, 10).until(EC.presence_of_all_elements_located(search_records_rows))
-            rows = self.get_elements(search_records_rows)
+            WebDriverWait(self.driver, 10).until(EC.presence_of_all_elements_located(self.search_results))
+            rows = self.get_elements(self.search_results)
         except TimeoutException:
             print(f'No search record found for job title: {expected_job_title}')
             return False
@@ -233,12 +227,12 @@ class AddVacancyPage(BasePage):
             return False
         
         for row in rows:
-            cells = row.find_elements(*record_cells)
+            cells = row.find_elements(*self.record_cells)
             cell_text = [cell.text.strip() for cell in cells]
             row_content = " ".join(cell_text)
 
             if expected_job_title.lower() not in row_content.lower():
-                print(f"Records found: {'|'.join(row_content)} does not contain {expected_job_title}")
+                print(f"Records found: {'|'.join(cell_text)} does not contain {expected_job_title}")
                 return False
             
         print(f"All records match with filter value: {expected_job_title}")
@@ -250,7 +244,7 @@ class AddVacancyPage(BasePage):
         job_title_options_path =(By.XPATH, "//div[@role='listbox']//div[@role='option']//span")
 
         self.get_element(job_title_field_path).click()
-        job_title_elements = self.get_elements(job_title_options_path)[1:]
+        job_title_elements = self.get_elements(job_title_options_path)
         job_title_options = [element.text.strip() for element in job_title_elements]
         ActionChains(self.driver).send_keys(Keys.ESCAPE).perform()
         print(f"Collected job title options: {job_title_options}")
@@ -296,108 +290,82 @@ class AddVacancyPage(BasePage):
         else:
             print("\n All job titles verified successfully")
             return True
-
         
-            
-    # def verify_search_results_by_text(self, expected_job_title, retries=3):
-    #     for attempt in range(retries):
-    #         try:
-    #             rows = self.get_elements(self.search_results)
-    #             if not rows:
-    #                 print(f"No records found for job title: {expected_job_title}")
-    #                 return False
-
-    #             for row in rows:
-    #                 cells = row.find_elements(*self.record_cells)
-    #                 texts = [cell.text.strip() for cell in cells]
-    #                 row_content = " ".join(texts)
-
-    #                 if expected_job_title.lower() not in row_content.lower():
-    #                     print(f"Records found: {'|'.join(texts)} does not contain expected filter value: {expected_job_title}")
-    #                     return False
-                        
-    #             print(f"All records match filter: {expected_job_title}")
-    #             return True
+    def verify_search_records_based_on_hiring_manager_by_text(self, expected_hiring_manager):
+        try:
+            WebDriverWait(self.driver, 10).until(EC.presence_of_all_elements_located(self.search_results))
+            rows = self.get_elements(self.search_results)
+        except TimeoutException:
+            print(f"No search records found for hiring manager: {expected_hiring_manager}")
+            return False
         
-    #         except StaleElementReferenceException:
-    #             # If the old element is stale, get the whole table back
-    #             print(f"DOM reloaded during check (attempt {attempt+1}/{retries}), retrying...")
-    #             time.sleep(1)
-            
-    #         except TimeoutException:
-    #             print(f"Timeout while waiting for table to appear (attempt {attempt+1}/{retries})")
-    #             time.sleep(1)
-
-    #     print(f"Verification failed after {retries} retries for job title: {expected_job_title}")
-    #     return False
-            
-    # def verify_vacancies_based_on_job_title(self): 
-    #     self.wait_and_click(self.job_title_vacancies_page)
-    #     WebDriverWait(self.driver, 5).until(EC.presence_of_element_located((By.XPATH, "//div[@role='listbox']")))
-
-    #     job_title_elements = self.get_elements(self.job_title_options)[1:]
-    #     job_titles = [element.text.strip() for element in job_title_elements]
-    #     ActionChains(self.driver).send_keys(Keys.ESCAPE).perform()
-    #     time.sleep(1)
-
-    #     print(f"Collected job titles: {job_titles}")
-
-    #     failed_titles = []  # save failed job title list
-
-    #     for job_title in job_titles:
-    #         print(f"\n--- Testing filter for job title: {job_title} ---")
-    #         for attempt in range(3):
-    #             try:
-    #                 self.wait_and_click(self.job_title_vacancies_page)
-    #                 WebDriverWait(self.driver, 3).until(EC.presence_of_element_located((By.XPATH, "//div[@role='listbox']")))
-    #                 specific_job_title = (By.XPATH, f"//div[@role='option']//span[normalize-space()='{job_title}']")
-    #                 self.get_element(specific_job_title).click()
-    #                 break
-    #             except (TimeoutException, StaleElementReferenceException):
-    #                 print(f"Attempt {attempt + 1}/3: dropdown not ready, retrying...")
-    #                 if attempt == 2:
-    #                     print(f"Skipping '{job_title}' (dropdown failed to open)")
-    #                     failed_titles.append(job_title)
-    #                     continue
-
-    #         self.click_search_btn()
-
-    #         # Wait for results (or timeout)
-    #         try:
-    #             WebDriverWait(self.driver, 10).until(EC.presence_of_all_elements_located(self.search_results))
-    #         except TimeoutException:
-    #             print(f"No records loaded for '{job_title}' within timeout.")
-    #             failed_titles.append(job_title)
-    #             self.click_reset_btn()
-    #             continue
-
-    #         # Check the results
-    #         if not self.verify_search_results_by_text(expected_job_title=job_title):
-    #             print(f"Verification failed for job title: {job_title}")
-    #             failed_titles.append(job_title)
-    #         else:
-    #             print(f"Verified successfully for: {job_title}")
-
-    #         # Reset filters
-    #         self.click_reset_btn()
-    #         WebDriverWait(self.driver, 5).until(EC.element_to_be_clickable(self.job_title_vacancies_page))
-
-    #     # Summary of results
-    #     if failed_titles:
-    #         print(f"\n Some job titles failed verification: {failed_titles}")
-    #         return False
-    #     else:
-    #         print("\n All job title filters verified successfully!")
-    #         return True
-
-            
-
-
-
+        if not rows:
+            print('No search records found')
+            return False
         
+        for row in rows:
+            cells = row.find_elements(*self.record_cells)
+            cell_text = [cell.text.strip() for cell in cells]
+            row_content = " ".join(cell_text)
+
+            if expected_hiring_manager.lower() not in row_content.lower():
+                print(f'Records found: {'|'.join(cell_text)} does not contain hiring manager: {expected_hiring_manager}')
+                return False
         
+        print(f"All records match with filter value: {expected_hiring_manager}")
+        return True
+
+    def verify_filter_vacancies_based_on_hiring_manager(self):
+        hiring_manager_field_path = (By.XPATH, "//label[text()='Hiring Manager']/following::div[@class='oxd-select-text-input'][1]")
+        hiring_manager_dropdown_path = (By.XPATH, "//div[@role='listbox']")
+        hiring_manager_options_path = (By.XPATH, "//div[@role='listbox']//div[@role='option']//span")
+
+        self.get_element(hiring_manager_field_path).click()
+        hiring_manager_elements = self.get_elements(hiring_manager_options_path)
+        hiring_manager_options = [element.text.strip() for element in hiring_manager_elements]
+        ActionChains(self.driver).send_keys(Keys.ESCAPE).perform()
+        print(f"Collected hiring manager options: {hiring_manager_options}")
+
+        failed_hiring_manager_options = []
+
+        for hiring_manager in hiring_manager_options:
+            print(f"\n-- Testing filter for hiring manger: {hiring_manager}")
+            for attempt in range(3):
+                try:
+                    self.get_element(hiring_manager_field_path).click()
+                    WebDriverWait(self.driver, 10).until(EC.visibility_of_element_located(hiring_manager_dropdown_path))
+                    break
+                except (TimeoutException, StaleElementReferenceException):
+                    print(f"Attempt {attempt + 1}/3: Dropdown not ready for hiring manager '{hiring_manager}', retrying...")
+                    ActionChains(self.driver).send_keys(Keys.ESCAPE).perform()
+                    time.sleep(1)
+                    if attempt == 2:
+                        print(f"Skipping '{hiring_manager}', dropdown failed to open after retries")
+                        failed_hiring_manager_options.append(hiring_manager)
+                        continue
+
+            if hiring_manager in failed_hiring_manager_options:
+                    continue
+
+            specific_hiring_manager = (By.XPATH, f"//div[@role='listbox']//div[@role='option']//span[normalize-space() = '{hiring_manager}']")
+            self.get_element(specific_hiring_manager).click()
+            self.click_search_btn()
+
+            if not self.verify_search_records_based_on_hiring_manager_by_text(expected_hiring_manager=hiring_manager):
+                print(f"Verification failed for hiring manager: {hiring_manager}")
+                failed_hiring_manager_options.append(hiring_manager)
+            else:
+                print(f"Verified successfully for hiring manager: {hiring_manager}")
+            
+            self.click_reset_btn()
+            WebDriverWait(self.driver, 10).until(EC.element_to_be_clickable(hiring_manager_field_path))
+
+        if failed_hiring_manager_options:
+            print(f"\n Some hiring manager options for verification: {failed_hiring_manager_options}")
+            return False
+        else:
+            print(f"\n All hiring manager options verified successfully")
+            return True    
 
 
-
-
-
+  
