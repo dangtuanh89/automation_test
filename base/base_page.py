@@ -79,3 +79,12 @@ class BasePage:
 
         # Ném lại lỗi cuối cùng (giúp traceback chính xác)
         raise last_exception
+    
+    def select_dropdown_value(self, field_locator, value_to_select):
+        self. get_element(field_locator).click()
+        specific_option_locator = (By.XPATH, f"//div[@role='listbox']//div[@role='option']//span[normalize-space() = '{value_to_select}']")
+        self.get_element(specific_option_locator).click()
+        
+
+
+    

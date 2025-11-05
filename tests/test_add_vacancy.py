@@ -44,3 +44,14 @@ class TestAddVacancy(BaseTest):
         recruitment_page.click_vacancies_tab()
         assert add_vacancy_page.verify_filter_vacancies_based_on_hiring_manager(), "The returned records does not match with hiring manager filter"
         
+    def test_filter_vacancies_based_on_status(self, login_page, dashboard_page, recruitment_page, add_vacancy_page):
+        login_page.login(ConfigReader.get_username(), ConfigReader.get_password())
+        dashboard_page.click_recruitment_menu()
+        recruitment_page.click_vacancies_tab()
+        assert add_vacancy_page.verify_filter_vacancies_based_on_status(), "The returned records does not match with hiring manager filter"
+
+    def test_filter_vacancies_by_4_filters(self, login_page, dashboard_page, recruitment_page, add_vacancy_page):
+        login_page.login(ConfigReader.get_username(), ConfigReader.get_password())
+        dashboard_page.click_recruitment_menu()
+        recruitment_page.click_vacancies_tab()
+        assert add_vacancy_page.verify_filter_vacancies_by_4_filters("Payroll Administrator", "Payroll Administrator", "First Name Last Name", "Active"), "All the returned records matching with the filter"
