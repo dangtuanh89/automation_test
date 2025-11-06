@@ -43,3 +43,19 @@ class ConfigReader:
     @staticmethod
     def get_number_of_positions():
         return ConfigReader.load_config()["vacancy_data"]["number_of_positions"]
+    
+    @staticmethod
+    def get_job_title():
+        return ConfigReader.load_config()["filter_data"]["job_title"]
+    
+    @staticmethod
+    def get_vacancy():
+        return ConfigReader.load_config()["filter_data"]["vacancy"]
+    
+    @staticmethod
+    def get_hiring_manager():
+        return ConfigReader.load_config()["filter_data"]["hiring_manager"]
+    
+    @staticmethod
+    def get_status():
+        return ConfigReader.load_config()["filter_data"]["status"]

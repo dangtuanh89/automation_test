@@ -12,5 +12,11 @@
         "vacancy_name": "Manual testing 5",
         "description": "Automation Test Is Running",
         "number_of_positions": 2
+    },
+    "filter_data": {
+        "job_title": "Payroll Administrator",
+        "vacancy": "Payroll Administrator",
+        "hiring_manager": "QA TESTERR1998 SMITH",
+        "status": "Active"
     }
 }

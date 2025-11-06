@@ -2,16 +2,23 @@ from base.base_test import BaseTest
 from utils.config_reader import ConfigReader
 import pytest
 
+@pytest.fixture(scope="class")
+def setup_vacancies_page(request, login_page, dashboard_page, recruitment_page):
+    login_page.login(ConfigReader.get_username(), ConfigReader.get_password())
+    dashboard_page.click_recruitment_menu()
+    recruitment_page.click_vacancies_tab()
+    # Gán các Page Objects vào lớp để các test case có thể sử dụng (Pytest magic)
+    request.cls.login_page = login_page
+    request.cls.dashboard_page = dashboard_page
+    request.cls.recruitment_page = recruitment_page
+
+@pytest.mark.usefixtures("setup_vacancies_page")
 class TestAddVacancy(BaseTest):
-    @pytest.mark.smoke
-    def test_add_new_automation_tester_vacancy(self, login_page, dashboard_page, recruitment_page, add_vacancy_page, edit_vacancy_page):
-        login_page.login(ConfigReader.get_username(), ConfigReader.get_password())
-        dashboard_page.click_recruitment_menu()
-        recruitment_page.click_vacancies_tab()
-        recruitment_page.click_add_btn()
+    def test_add_new_automation_tester_vacancy(self, add_vacancy_page, edit_vacancy_page):
+        self.recruitment_page.click_add_btn()
         assert add_vacancy_page.verify_add_vacancy_displayed(), "Add vacancy page is not displayed"
         print("Add vacancy page is displayed")
-        #add_vacancy_page.input_vacancy_data(ConfigReader.get_vacancy_name(), ConfigReader.get_description, ConfigReader.get_number_of_positions)
+        
         add_vacancy_page.input_vacancy_data(ConfigReader.get_vacancy_name(), ConfigReader.get_description(), ConfigReader.get_number_of_positions())
         add_vacancy_page.choose_hiring_manager()
         add_vacancy_page.set_active_to_false()
@@ -26,32 +33,21 @@ class TestAddVacancy(BaseTest):
         assert add_vacancy_page.verify_has_search_record(), "No search record found"
         assert add_vacancy_page.verify_search_data(), "Search results data mismatch with input criteria"
 
-    def test_filter_vacancies_based_on_job_title(self, login_page, dashboard_page, recruitment_page, add_vacancy_page):
-        login_page.login(ConfigReader.get_username(), ConfigReader.get_password())
-        dashboard_page.click_recruitment_menu()
-        recruitment_page.click_vacancies_tab()
+    def test_filter_vacancies_based_on_job_title(self, add_vacancy_page):
         assert add_vacancy_page.verify_filter_vacancies_based_job_title(), "The returned records does not match with the filter"
 
-    def test_filter_vacancies_based_on_vacancy(self, login_page, dashboard_page, recruitment_page, add_vacancy_page):
-        login_page.login(ConfigReader.get_username(), ConfigReader.get_password())
-        dashboard_page.click_recruitment_menu()
-        recruitment_page.click_vacancies_tab()
+    def test_filter_vacancies_based_on_vacancy(self, add_vacancy_page):
         assert add_vacancy_page.verify_filter_vacancies_based_on_vacancy(), "The returned records does not match with vacancy filter"
     
-    def test_filter_vacancies_based_on_hiring_manager(self, login_page, dashboard_page, recruitment_page, add_vacancy_page):
-        login_page.login(ConfigReader.get_username(), ConfigReader.get_password())
-        dashboard_page.click_recruitment_menu()
-        recruitment_page.click_vacancies_tab()
+    def test_filter_vacancies_based_on_hiring_manager(self, add_vacancy_page):
         assert add_vacancy_page.verify_filter_vacancies_based_on_hiring_manager(), "The returned records does not match with hiring manager filter"
         
-    def test_filter_vacancies_based_on_status(self, login_page, dashboard_page, recruitment_page, add_vacancy_page):
-        login_page.login(ConfigReader.get_username(), ConfigReader.get_password())
-        dashboard_page.click_recruitment_menu()
-        recruitment_page.click_vacancies_tab()
+    def test_filter_vacancies_based_on_status(self, add_vacancy_page):
         assert add_vacancy_page.verify_filter_vacancies_based_on_status(), "The returned records does not match with hiring manager filter"
 
-    def test_filter_vacancies_by_4_filters(self, login_page, dashboard_page, recruitment_page, add_vacancy_page):
-        login_page.login(ConfigReader.get_username(), ConfigReader.get_password())
-        dashboard_page.click_recruitment_menu()
-        recruitment_page.click_vacancies_tab()
-        assert add_vacancy_page.verify_filter_vacancies_by_4_filters("Payroll Administrator", "Payroll Administrator", "First Name Last Name", "Active"), "All the returned records matching with the filter"
+    def test_filter_vacancies_by_4_filters(self, add_vacancy_page):
+        job_title = ConfigReader.get_job_title()
+        vacancy = ConfigReader.get_vacancy()
+        hiring_manager = ConfigReader.get_hiring_manager()
+        status = ConfigReader.get_status()
+        assert add_vacancy_page.verify_filter_vacancies_by_4_filters(job_title, vacancy, hiring_manager, status), "All the returned records matching with the filter"
