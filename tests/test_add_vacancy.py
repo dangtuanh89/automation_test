@@ -23,6 +23,3 @@ class TestAddVacancy(BaseTest):
         add_vacancy_page.search_job()
         assert add_vacancy_page.verify_has_search_record(), "No search record found"
         assert add_vacancy_page.verify_search_data(), "Search results data mismatch with input criteria"
-
-        
-

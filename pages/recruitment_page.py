@@ -12,6 +12,3 @@ class RecruitmentPage(BasePage):
         
     def click_add_btn(self):
         self.get_element(self.add_btn).click()
-
-    
-

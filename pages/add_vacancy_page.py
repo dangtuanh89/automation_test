@@ -106,8 +106,3 @@ class AddVacancyPage(BasePage):
                 return False
         print("All data dispatches matching with the input data")
         return True
-
-
-
-
-
