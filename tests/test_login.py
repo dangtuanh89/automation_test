@@ -1,8 +1,9 @@
 from base.base_test import BaseTest
 from utils.config_reader import ConfigReader
-
+import pytest
 
 class TestLoginPage(BaseTest):
+    @pytest.mark.smoke
     def test_login_sucessful(self, login_page, dashboard_page):
         assert login_page.verify_username_field_is_displayed(), "Username field is not displayed"
         assert login_page.verify_password_field_is_displayed(), "Password field is not displayed"

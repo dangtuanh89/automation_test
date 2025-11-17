@@ -7,7 +7,6 @@ def setup_vacancies_page(request, login_page, dashboard_page, recruitment_page):
     login_page.login(ConfigReader.get_username(), ConfigReader.get_password())
     dashboard_page.click_recruitment_menu()
     recruitment_page.click_vacancies_tab()
-    # Gán các Page Objects vào lớp để các test case có thể sử dụng (Pytest magic)
     request.cls.login_page = login_page
     request.cls.dashboard_page = dashboard_page
     request.cls.recruitment_page = recruitment_page
